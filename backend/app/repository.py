@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from .notes import NoteRow, normalize_note_text
 from .papers import DuplicatePaperError, PaperRow, normalize_doi, normalize_title
 
 
@@ -49,29 +48,6 @@ class PaperRepository:
                 )
                 cur.execute(
                     "CREATE UNIQUE INDEX IF NOT EXISTS idx_papers_doi_lower ON papers ((lower(doi))) WHERE doi IS NOT NULL;"
-                )
-            conn.commit()
-
-
-    def init_note_schema(self) -> None:
-        with self._connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS notes (
-                      id UUID PRIMARY KEY,
-                      paper_id UUID NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
-                      research_question TEXT NOT NULL DEFAULT '',
-                      method TEXT NOT NULL DEFAULT '',
-                      result TEXT NOT NULL DEFAULT '',
-                      limitation TEXT NOT NULL DEFAULT '',
-                      insight TEXT NOT NULL DEFAULT '',
-                      created_at TIMESTAMPTZ NOT NULL
-                    );
-                    """
-                )
-                cur.execute(
-                    "CREATE INDEX IF NOT EXISTS idx_notes_paper_id_created_at ON notes (paper_id, created_at DESC);"
                 )
             conn.commit()
 
@@ -161,101 +137,5 @@ class PaperRepository:
             "created_at": row[6],
         }
 
-
-    def create_note(
-        self,
-        *,
-        paper_id: UUID,
-        research_question: str,
-        method: str,
-        result: str,
-        limitation: str,
-        insight: str,
-    ) -> dict[str, Any]:
-        payload = {
-            "id": uuid4(),
-            "paper_id": paper_id,
-            "research_question": normalize_note_text(research_question),
-            "method": normalize_note_text(method),
-            "result": normalize_note_text(result),
-            "limitation": normalize_note_text(limitation),
-            "insight": normalize_note_text(insight),
-            "created_at": datetime.utcnow(),
-        }
-
-        with self._connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    INSERT INTO notes (id, paper_id, research_question, method, result, limitation, insight, created_at)
-                    VALUES (%(id)s, %(paper_id)s, %(research_question)s, %(method)s, %(result)s, %(limitation)s, %(insight)s, %(created_at)s)
-                    RETURNING id, paper_id, research_question, method, result, limitation, insight, created_at;
-                    """,
-                    payload,
-                )
-                row = cur.fetchone()
-            conn.commit()
-
-        return {
-            "id": row[0],
-            "paper_id": row[1],
-            "research_question": row[2],
-            "method": row[3],
-            "result": row[4],
-            "limitation": row[5],
-            "insight": row[6],
-            "created_at": row[7],
-        }
-
-    def list_notes(self, *, paper_id: UUID | None = None) -> list[dict[str, Any]]:
-        with self._connect() as conn:
-            with conn.cursor() as cur:
-                if paper_id is not None:
-                    cur.execute(
-                        """
-                        SELECT id, paper_id, research_question, method, result, limitation, insight, created_at
-                        FROM notes
-                        WHERE paper_id = %s
-                        ORDER BY created_at DESC;
-                        """,
-                        (paper_id,),
-                    )
-                else:
-                    cur.execute(
-                        """
-                        SELECT id, paper_id, research_question, method, result, limitation, insight, created_at
-                        FROM notes
-                        ORDER BY created_at DESC;
-                        """
-                    )
-                rows = cur.fetchall()
-
-        mapped = [
-            NoteRow(
-                id=row[0],
-                paper_id=row[1],
-                research_question=row[2],
-                method=row[3],
-                result=row[4],
-                limitation=row[5],
-                insight=row[6],
-                created_at=row[7],
-            )
-            for row in rows
-        ]
-
-        return [
-            {
-                "id": item.id,
-                "paper_id": item.paper_id,
-                "research_question": item.research_question,
-                "method": item.method,
-                "result": item.result,
-                "limitation": item.limitation,
-                "insight": item.insight,
-                "created_at": item.created_at,
-            }
-            for item in mapped
-        ]
 
 paper_repository = PaperRepository()

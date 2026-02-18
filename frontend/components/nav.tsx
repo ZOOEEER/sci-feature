@@ -3,9 +3,15 @@ import Link from "next/link";
 const navItems = [
   { label: "Dashboard", href: "/" },
   { label: "Library", href: "/library" },
-  { label: "Reader", href: "/reader" },
-  { label: "Graph", href: "/graph" },
+  { label: "Reader", href: "#" },
+  { label: "Graph", href: "#" },
   { label: "Writer", href: "#" },
+const navItems = [
+  "Dashboard",
+  "Library",
+  "Reader",
+  "Graph",
+  "Writer",
 ];
 
 export function Nav() {
@@ -15,6 +21,8 @@ export function Nav() {
         <Link
           key={item.label}
           href={item.href}
+        <span
+          key={item}
           style={{
             padding: "6px 10px",
             borderRadius: 8,
@@ -25,6 +33,8 @@ export function Nav() {
         >
           {item.label}
         </Link>
+          {item}
+        </span>
       ))}
     </nav>
   );
