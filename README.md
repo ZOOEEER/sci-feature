@@ -13,6 +13,34 @@
 - `backend/`：FastAPI 后端
 - `docker-compose.yml`：本地一键启动依赖服务
 
+## 本地开发（Conda 方案）
+
+### 1) 初始化 Conda 环境
+```bash
+conda env create -f environment.yml
+conda activate sci-feature
+```
+
+### 2) 安装前端依赖
+```bash
+cd frontend
+npm install
+```
+
+### 3) 启动服务
+```bash
+# backend
+conda activate sci-feature
+cd backend
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# frontend
+conda activate sci-feature
+cd frontend
+npm run dev -- --hostname 0.0.0.0 --port 3000
+```
+
+### 4) 运行测试
 ## 本地开发
 
 ### 1) 后端
@@ -36,6 +64,12 @@ npm run dev -- --hostname 0.0.0.0 --port 3000
 # 离线可运行（不依赖联网安装第三方包）
 make test
 
+# 完整 API 测试（依赖 Conda 环境中的 Python 包）
+make test-backend-api
+```
+
+> 详细说明见 `docs/conda-setup.md`。
+
 # 完整 API 测试（需要先成功安装 backend 依赖）
 make test-backend-api
 ```
@@ -45,3 +79,8 @@ make test-backend-api
 2. 实现阅读笔记模板与编辑
 3. 接入图谱数据结构与可视化组件
 4. 打通“选题子图 -> 综述草稿”工作流
+
+## Week 5 已实现
+- 文献导入：支持 `manual` 与 `doi` 两种 source
+- PostgreSQL 持久化：`papers` 表与去重索引（标题归一化、DOI 小写唯一）
+- Library 页面：可提交文献并实时刷新列表

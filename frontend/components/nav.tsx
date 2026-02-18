@@ -1,3 +1,11 @@
+import Link from "next/link";
+
+const navItems = [
+  { label: "Dashboard", href: "/" },
+  { label: "Library", href: "/library" },
+  { label: "Reader", href: "#" },
+  { label: "Graph", href: "#" },
+  { label: "Writer", href: "#" },
 const navItems = [
   "Dashboard",
   "Library",
@@ -10,6 +18,9 @@ export function Nav() {
   return (
     <nav style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
       {navItems.map((item) => (
+        <Link
+          key={item.label}
+          href={item.href}
         <span
           key={item}
           style={{
@@ -20,6 +31,8 @@ export function Nav() {
             fontWeight: 600,
           }}
         >
+          {item.label}
+        </Link>
           {item}
         </span>
       ))}

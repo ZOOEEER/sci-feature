@@ -5,12 +5,16 @@ from uuid import UUID, uuid4
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
+from .papers import DuplicatePaperError
+from .repository import paper_repository
+
 
 class PaperCreate(BaseModel):
     title: str = Field(min_length=3)
     doi: str | None = None
     year: int | None = None
     tags: List[str] = Field(default_factory=list)
+    source: str = Field(default="manual", pattern="^(manual|doi)$")
 
 
 class Paper(PaperCreate):
@@ -31,6 +35,13 @@ class Note(NoteCreate):
     created_at: datetime
 
 
+app = FastAPI(title="Sci Feature API", version="0.2.0")
+NOTES: dict[UUID, Note] = {}
+
+
+@app.on_event("startup")
+def setup_schema() -> None:
+    paper_repository.init_schema()
 app = FastAPI(title="Sci Feature API", version="0.1.0")
 
 PAPERS: dict[UUID, Paper] = {}
@@ -44,6 +55,7 @@ def health() -> dict[str, str]:
 
 @app.get("/api/papers", response_model=List[Paper])
 def list_papers() -> List[Paper]:
+    return [Paper(**item) for item in paper_repository.list_papers()]
     return list(PAPERS.values())
 
 
