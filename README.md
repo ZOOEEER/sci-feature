@@ -45,7 +45,7 @@ npm run dev -- --hostname 0.0.0.0 --port 3000
 # 离线可运行（不依赖联网安装第三方包）
 make test
 
-# API 集成测试（有依赖时执行；无依赖时自动 skip 并给出提示）
+# API 合约测试（当前环境可执行，不跳过）
 make test-backend-api
 ```
 
@@ -67,3 +67,8 @@ make test-backend-api
 - Reader 页面：按文献创建结构化阅读笔记
 - 笔记持久化：新增 `notes` 表与按 `paper_id` 查询能力
 - Note API：`POST /api/notes`、`GET /api/notes?paper_id=...`
+
+
+## 测试策略说明
+- `make test-backend-api` 执行不依赖三方包的 API 合约测试（可真实断言文献/笔记接口行为，不跳过）。
+- 当本地安装 FastAPI 后，可额外补充 HTTP 层端到端测试。

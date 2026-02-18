@@ -1,11 +1,11 @@
 .PHONY: test test-offline test-backend-api run-backend
 
-test: test-offline
+test: test-offline test-backend-api
 
 test-offline:
 	cd backend && python -m unittest discover -s tests -p '*unittest.py' -v
 
-# Runs API integration tests when dependencies exist; otherwise reports skipped tests.
+# Executable API contract tests (no third-party dependencies required)
 test-backend-api:
 	cd backend && python -m unittest -v tests/test_api.py
 
