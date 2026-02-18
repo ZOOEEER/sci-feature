@@ -10,5 +10,6 @@ export const todayTasks = [
   "搭建前后端脚手架",
   "定义 Paper / Note API",
   "落地 Library 页面交互（导入/列表）",
+  "落地 Library 页面骨架",
   "完成首轮自动化测试",
 ];

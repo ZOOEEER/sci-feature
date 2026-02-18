@@ -41,6 +41,25 @@ npm run dev -- --hostname 0.0.0.0 --port 3000
 ```
 
 ### 4) 运行测试
+## 本地开发
+
+### 1) 后端
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 2) 前端
+```bash
+cd frontend
+npm install
+npm run dev -- --hostname 0.0.0.0 --port 3000
+```
+
+### 3) 运行测试
 ```bash
 # 离线可运行（不依赖联网安装第三方包）
 make test
@@ -50,6 +69,10 @@ make test-backend-api
 ```
 
 > 详细说明见 `docs/conda-setup.md`。
+
+# 完整 API 测试（需要先成功安装 backend 依赖）
+make test-backend-api
+```
 
 ## 近期开发任务（按排期）
 1. 实现文献导入（DOI + 手动）持久化
