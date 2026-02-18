@@ -45,7 +45,7 @@ npm run dev -- --hostname 0.0.0.0 --port 3000
 # 离线可运行（不依赖联网安装第三方包）
 make test
 
-# 完整 API 测试（依赖 Conda 环境中的 Python 包）
+# API 集成测试（有依赖时执行；无依赖时自动 skip 并给出提示）
 make test-backend-api
 ```
 
