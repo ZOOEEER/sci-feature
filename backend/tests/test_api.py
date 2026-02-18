@@ -62,6 +62,14 @@ class ApiContractTests(unittest.TestCase):
         self.assertEqual(status, 404)
         self.assertEqual(payload["detail"], "Paper not found")
 
+    def test_graph_contains_tag_nodes_and_edges(self) -> None:
+        self.api.create_paper({"title": "Paper A", "tags": ["catalysis", "review"], "source": "manual"})
+        status, graph = self.api.get_graph()
+        self.assertEqual(status, 200)
+        self.assertGreaterEqual(len(graph["nodes"]), 3)
+        self.assertTrue(any(node["id"] == "tag:catalysis" for node in graph["nodes"]))
+        self.assertTrue(any(edge["type"] == "HAS_TAG" for edge in graph["edges"]))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

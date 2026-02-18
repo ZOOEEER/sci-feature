@@ -12,6 +12,7 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from .domain import DuplicatePaperError, PaperStore
+from .graph import build_graph_payload
 
 
 @dataclass(slots=True)
@@ -126,3 +127,8 @@ class ApiContractService:
             }
             for note in items
         ]
+
+
+    def get_graph(self) -> tuple[int, dict[str, list[dict[str, Any]]]]:
+        _, papers = self.list_papers()
+        return 200, build_graph_payload(papers)

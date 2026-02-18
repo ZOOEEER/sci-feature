@@ -72,3 +72,9 @@ make test-backend-api
 ## 测试策略说明
 - `make test-backend-api` 执行不依赖三方包的 API 合约测试（可真实断言文献/笔记接口行为，不跳过）。
 - 当本地安装 FastAPI 后，可额外补充 HTTP 层端到端测试。
+
+
+## Week 7 已实现
+- Graph API：`GET /api/graph` 返回 Paper-Tag nodes/edges
+- Graph 页面：展示节点与关系边，支持快速核对图谱数据
+- API 合约测试新增图谱断言

@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from .graph import build_graph_payload
 from .papers import DuplicatePaperError
 from .repository import paper_repository
 
@@ -87,3 +88,9 @@ def create_note(payload: NoteCreate) -> Note:
 @app.get("/api/notes", response_model=List[Note])
 def list_notes(paper_id: UUID | None = Query(default=None)) -> List[Note]:
     return [Note(**item) for item in paper_repository.list_notes(paper_id=paper_id)]
+
+
+@app.get("/api/graph")
+def get_graph() -> dict[str, list[dict[str, object]]]:
+    papers = paper_repository.list_papers()
+    return build_graph_payload(papers)
