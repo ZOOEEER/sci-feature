@@ -1,10 +1,14 @@
 .PHONY: test test-offline test-backend-api run-backend
 
+test: test-offline test-backend-api
 test: test-offline
 
 test-offline:
 	cd backend && python -m unittest discover -s tests -p '*unittest.py' -v
 
+# Executable API contract tests (no third-party dependencies required)
+test-backend-api:
+	cd backend && python -m unittest -v tests/test_api.py
 # Requires third-party packages from backend/requirements.txt
 test-backend-api:
 	cd backend && python -m pytest -q

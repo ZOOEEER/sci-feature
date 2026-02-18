@@ -1,10 +1,11 @@
 from datetime import datetime
 from typing import List
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from .graph import build_graph_payload
 from .papers import DuplicatePaperError
 from .repository import paper_repository
 
@@ -28,6 +29,7 @@ class NoteCreate(BaseModel):
     method: str = ""
     result: str = ""
     limitation: str = ""
+    insight: str = ""
 
 
 class Note(NoteCreate):
@@ -35,17 +37,13 @@ class Note(NoteCreate):
     created_at: datetime
 
 
-app = FastAPI(title="Sci Feature API", version="0.2.0")
-NOTES: dict[UUID, Note] = {}
+app = FastAPI(title="Sci Feature API", version="0.3.0")
 
 
 @app.on_event("startup")
 def setup_schema() -> None:
     paper_repository.init_schema()
-app = FastAPI(title="Sci Feature API", version="0.1.0")
-
-PAPERS: dict[UUID, Paper] = {}
-NOTES: dict[UUID, Note] = {}
+    paper_repository.init_note_schema()
 
 
 @app.get("/health")
@@ -56,34 +54,43 @@ def health() -> dict[str, str]:
 @app.get("/api/papers", response_model=List[Paper])
 def list_papers() -> List[Paper]:
     return [Paper(**item) for item in paper_repository.list_papers()]
-    return list(PAPERS.values())
 
 
 @app.post("/api/papers", response_model=Paper, status_code=201)
 def create_paper(payload: PaperCreate) -> Paper:
-    paper = Paper(id=uuid4(), created_at=datetime.utcnow(), **payload.model_dump())
-    PAPERS[paper.id] = paper
-    return paper
+    try:
+        created = paper_repository.create_paper(
+            title=payload.title,
+            doi=payload.doi,
+            year=payload.year,
+            tags=payload.tags,
+            source=payload.source,
+        )
+    except DuplicatePaperError as exc:
+        raise HTTPException(status_code=409, detail="Paper already exists") from exc
 
-
-@app.get("/api/papers/{paper_id}", response_model=Paper)
-def get_paper(paper_id: UUID) -> Paper:
-    paper = PAPERS.get(paper_id)
-    if not paper:
-        raise HTTPException(status_code=404, detail="Paper not found")
-    return paper
+    return Paper(**created)
 
 
 @app.post("/api/notes", response_model=Note, status_code=201)
 def create_note(payload: NoteCreate) -> Note:
-    if payload.paper_id not in PAPERS:
-        raise HTTPException(status_code=404, detail="Paper not found for note")
-
-    note = Note(id=uuid4(), created_at=datetime.utcnow(), **payload.model_dump())
-    NOTES[note.id] = note
-    return note
+    note = paper_repository.create_note(
+        paper_id=payload.paper_id,
+        research_question=payload.research_question,
+        method=payload.method,
+        result=payload.result,
+        limitation=payload.limitation,
+        insight=payload.insight,
+    )
+    return Note(**note)
 
 
 @app.get("/api/notes", response_model=List[Note])
-def list_notes() -> List[Note]:
-    return list(NOTES.values())
+def list_notes(paper_id: UUID | None = Query(default=None)) -> List[Note]:
+    return [Note(**item) for item in paper_repository.list_notes(paper_id=paper_id)]
+
+
+@app.get("/api/graph")
+def get_graph() -> dict[str, list[dict[str, object]]]:
+    papers = paper_repository.list_papers()
+    return build_graph_payload(papers)

@@ -41,38 +41,15 @@ npm run dev -- --hostname 0.0.0.0 --port 3000
 ```
 
 ### 4) 运行测试
-## 本地开发
-
-### 1) 后端
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### 2) 前端
-```bash
-cd frontend
-npm install
-npm run dev -- --hostname 0.0.0.0 --port 3000
-```
-
-### 3) 运行测试
 ```bash
 # 离线可运行（不依赖联网安装第三方包）
 make test
 
-# 完整 API 测试（依赖 Conda 环境中的 Python 包）
+# API 合约测试（当前环境可执行，不跳过）
 make test-backend-api
 ```
 
 > 详细说明见 `docs/conda-setup.md`。
-
-# 完整 API 测试（需要先成功安装 backend 依赖）
-make test-backend-api
-```
 
 ## 近期开发任务（按排期）
 1. 实现文献导入（DOI + 手动）持久化
@@ -84,3 +61,20 @@ make test-backend-api
 - 文献导入：支持 `manual` 与 `doi` 两种 source
 - PostgreSQL 持久化：`papers` 表与去重索引（标题归一化、DOI 小写唯一）
 - Library 页面：可提交文献并实时刷新列表
+
+
+## Week 6 已实现
+- Reader 页面：按文献创建结构化阅读笔记
+- 笔记持久化：新增 `notes` 表与按 `paper_id` 查询能力
+- Note API：`POST /api/notes`、`GET /api/notes?paper_id=...`
+
+
+## 测试策略说明
+- `make test-backend-api` 执行不依赖三方包的 API 合约测试（可真实断言文献/笔记接口行为，不跳过）。
+- 当本地安装 FastAPI 后，可额外补充 HTTP 层端到端测试。
+
+
+## Week 7 已实现
+- Graph API：`GET /api/graph` 返回 Paper-Tag nodes/edges
+- Graph 页面：展示节点与关系边，支持快速核对图谱数据
+- API 合约测试新增图谱断言
